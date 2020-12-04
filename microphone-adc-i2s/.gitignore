@@ -2,5 +2,4 @@ build/
 sdkconfig
 sdkconfig.old
 .vscode/
-components/microphone/
-components/wave
+

@@ -10,22 +10,50 @@
 
 #include "sd_card.h"
 #include "microphone.h"
+#include "wave.h"
+#include "audio_example_file.h"
 
 static const char *TAG = "Main";
+int8_t header[HEADER_SIZE];
 
-void app_main(void)
+void write_to_SDCard()
 {
-    sdcard_init();
     ESP_LOGI(TAG, "Opening file");
-    FILE *f = fopen(MOUNT_POINT "/samples.txt", "w");
-    if (f == NULL)
+    FILE *wave_file;
+    wave_file = fopen(MOUNT_POINT "/samples.wav", "w");
+    if (wave_file == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return;
     }
-    fprintf(f, "Hello Ahmad!\n");
-    fclose(f);
+    // fprintf(wave_file, "Hello Ahmad!\n");
+    // fwrite(&header, 44, sizeof(int8_t), wave_file);
+    fwrite(&header, 44, sizeof(int8_t), wave_file);
+
+    fclose(wave_file);
     ESP_LOGI(TAG, "File written");
 
+    wave_file = fopen(MOUNT_POINT "/samples.wav", "a");
+    if (wave_file == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file for writing");
+        return;
+    }
+    // fprintf(wave_file, "Hello Ahmad!\n");
+    // fwrite(&header, 44, sizeof(int8_t), wave_file);
+    fwrite(&audio_table, sizeof(audio_table), sizeof(int8_t), wave_file);
+
+    fclose(wave_file);
+}
+
+void app_main(void)
+{
+    /* Initilization */
+    sdcard_init();
+    Microphone_init();
+    wavHeader(header, FLASH_RECORD_SIZE);
+    write_to_SDCard();
+
+    /* Free Buffers */
     sdcard_release();
 }
